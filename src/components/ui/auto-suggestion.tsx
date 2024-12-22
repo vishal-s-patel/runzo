@@ -19,7 +19,6 @@ const AutoSuggestion = ({ onBowlerChange }: AutoSuggestionProps) => {
   const { present } = useStore();
   const { innings, activeInning, activeBowler } = present;
   const [inputValue, setInputValue] = useState<string>("");
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [newBowler, setNewBowler] = useState<string>("");
   const [bowlers, setBowlers] = useState<Array<string>>(
     () =>
@@ -36,7 +35,6 @@ const AutoSuggestion = ({ onBowlerChange }: AutoSuggestionProps) => {
       setBowlers((prev) => [...prev, newBowler.trim()]);
       onBowlerChange(newBowler);
       setInputValue(newBowler);
-      setIsOpen(false); // Close popover
     }
   };
   return (
@@ -75,7 +73,6 @@ const AutoSuggestion = ({ onBowlerChange }: AutoSuggestionProps) => {
               onSelect={(currentValue) => {
                 setInputValue(currentValue === inputValue ? "" : currentValue);
                 onBowlerChange(bowler);
-                setIsOpen(false);
               }}
             >
               {bowler}

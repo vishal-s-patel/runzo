@@ -11,10 +11,10 @@ function saveToLocalStorage(state: CricketStoreState) {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
 }
 
-function loadFromLocalStorage(): Partial<CricketStoreState> | null {
-  const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
-  return savedState ? JSON.parse(savedState) : null;
-}
+// function loadFromLocalStorage(): Partial<CricketStoreState> | null {
+//   const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+//   return savedState ? JSON.parse(savedState) : null;
+// }
 
 function getTeamName(tossWinner: string, tossDecision: string, team1: string, team2: string) {
   let currentInning;
