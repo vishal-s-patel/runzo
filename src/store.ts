@@ -65,33 +65,34 @@ type CricketStoreActions = {
   addWicket: (wicketType: string, outBatsman: string, helper: string, run: number, newBatsman: string, extra: string) => void,
   checkResult: () => void,
   undo: () => void;
+  reset: () => void;
 }
+
+const initialState: CricketStoreState = {
+  past: [],
+  present: {
+    team1: "",
+    team2: "",
+    tossWinner: "",
+    tossDecision: "",
+    overs: 0,
+    activeInning: 0,
+    innings: [],
+    activeBatters: [],
+    activeBowler: {} as Bowler,
+    currentOver: [],
+    showBowlerDialog: false,
+    isMatchFinished: false,
+    description: "",
+    matchWinner: "",
+    firstInnTeamName: "",
+    secondInnTeamName: "",
+  }
+};
 
 const useStore = create<CricketStoreState & CricketStoreActions>()(
   devtools(
     immer((set, get) => {
-      const initialState: CricketStoreState = {
-        past: [],
-        present: {
-          team1: "",
-          team2: "",
-          tossWinner: "",
-          tossDecision: "",
-          overs: 0,
-          activeInning: 0,
-          innings: [],
-          activeBatters: [],
-          activeBowler: {} as Bowler,
-          currentOver: [],
-          showBowlerDialog: false,
-          isMatchFinished: false,
-          description: "",
-          matchWinner: "",
-          firstInnTeamName: "",
-          secondInnTeamName: "",
-        },
-        ...loadFromLocalStorage(),
-      };
       return {
         ...initialState,
         setMatchDetails: (team1, team2, tossWinner, tossDecision, overs) => {
@@ -104,6 +105,7 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             const { first, second } = getTeamName(tossWinner, tossDecision, team1, team2);
             state.present.firstInnTeamName = first;
             state.present.secondInnTeamName = second;
+            state.present.innings = [];
             saveToLocalStorage(state);
           })
         },
@@ -166,11 +168,11 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             state.present.activeBowler.runs += run;
             state.present.innings[present.activeInning].bowlers[bowlIndx].runs += run;
           });
-          get().checkResult();
           if ((run % 2 !== 0 && present.innings[present.activeInning].balls < 5) || (run % 2 === 0 && present.innings[present.activeInning].balls === 5)) {
             get().rotateStrikes();
           }
           get().changeOver();
+          get().checkResult();
         },
         rotateStrikes: () => {
           const { present } = get();
@@ -390,6 +392,13 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             if (state.past.length === 0) return;
             state.present = state.past.pop()!;
           })
+        },
+        reset: () => {
+          localStorage.removeItem(LOCAL_STORAGE_KEY);
+          set((state) => {
+            state.past = [];
+            state.present = initialState.present
+          });
         }
       }
     })

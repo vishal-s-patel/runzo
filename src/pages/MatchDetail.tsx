@@ -21,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   team1: z.string().min(1, { message: "Team name is required." }),
@@ -34,7 +35,7 @@ const formSchema = z.object({
 
 function MatchDetail() {
   const navigate = useNavigate();
-  const { setMatchDetails } = useStore();
+  const { setMatchDetails, reset } = useStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +56,10 @@ function MatchDetail() {
     setMatchDetails(team1, team2, tossWinner, decidedTo, overs);
     navigate("/player-details");
   }
+
+  useEffect(() => {
+    reset();
+  }, []);
 
   return (
     <section>
@@ -86,7 +91,7 @@ function MatchDetail() {
                   <FormItem>
                     <FormLabel>Team 2</FormLabel>
                     <FormControl>
-                      <Input placeholder="Team 1" {...field} />
+                      <Input placeholder="Team 2" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -173,8 +178,12 @@ function MatchDetail() {
                 )}
               />
               <div className="flex justify-between">
-                <Button variant="ghost" type="button" className="w-1/2">Advanced settings</Button>
-                <Button type="submit" className="w-1/2">Start match</Button>
+                <Button variant="ghost" type="button" className="w-1/2">
+                  Advanced settings
+                </Button>
+                <Button type="submit" className="w-1/2">
+                  Start match
+                </Button>
               </div>
             </form>
           </Form>

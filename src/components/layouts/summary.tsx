@@ -8,9 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { getER, getSR } from "@/lib/utils";
 
 function Summary() {
-  const {present} = useStore();
+  const { present } = useStore();
   const { activeBatters, activeBowler } = present;
   return (
     <Card className="m-2">
@@ -37,7 +38,9 @@ function Summary() {
                 <TableCell className="text-right">{batsman.balls}</TableCell>
                 <TableCell className="text-right">{batsman.fours}</TableCell>
                 <TableCell className="text-right">{batsman.sixes}</TableCell>
-                <TableCell className="text-right">{((batsman.runs / batsman.balls) * 100).toFixed(2)}</TableCell>
+                <TableCell className="text-right">
+                  {getSR(batsman.runs, batsman.balls)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -55,7 +58,9 @@ function Summary() {
           </TableHeader>
           <TableBody>
             <TableRow className="text-xs">
-              <TableCell className="font-medium">{activeBowler.playerName}</TableCell>
+              <TableCell className="font-medium">
+                {activeBowler.playerName}
+              </TableCell>
               <TableCell className="text-right">
                 {activeBowler.overs}.{activeBowler.balls}
               </TableCell>
@@ -66,7 +71,13 @@ function Summary() {
               <TableCell className="text-right">
                 {activeBowler.wickets}
               </TableCell>
-              <TableCell className="text-right">{(activeBowler.runs / (activeBowler.overs + (activeBowler.balls / 6))).toFixed(2)}</TableCell>
+              <TableCell className="text-right">
+                {getER(
+                  activeBowler.runs,
+                  activeBowler.overs,
+                  activeBowler.balls
+                )}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>

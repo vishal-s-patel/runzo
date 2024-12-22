@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
-import { Button } from "./button";
 import {
   Command,
   CommandEmpty,
@@ -9,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "./command";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import useStore from "@/store";
 
@@ -42,60 +40,58 @@ const AutoSuggestion = ({ onBowlerChange }: AutoSuggestionProps) => {
     }
   };
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={isOpen}
-          className="w-full justify-between"
-        >
-          {inputValue
-            ? bowlers.find((bowler) => bowler === inputValue)
-            : "Select bowler"}
-          <ChevronsUpDown className="opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent>
-        <Command>
-          <CommandInput
-            placeholder="Select a new bowler"
-            value={newBowler}
-            onValueChange={setNewBowler}
-          ></CommandInput>
-          <CommandList>
-            {newBowler && (
-              <CommandEmpty onClick={() => handleAddItem()}>
-                Add "{newBowler}"
-              </CommandEmpty>
-            )}
-            <CommandGroup>
-              {bowlers.map((bowler) => (
-                <CommandItem
-                  key={bowler}
-                  value={bowler}
-                  onSelect={(currentValue) => {
-                    setInputValue(
-                      currentValue === inputValue ? "" : currentValue
-                    );
-                    onBowlerChange(bowler);
-                    setIsOpen(false);
-                  }}
-                >
-                  {bowler}
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      inputValue === bowler ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    // <Popover open={isOpen} onOpenChange={setIsOpen}>
+    //   <PopoverTrigger asChild>
+    //     <Button
+    //       variant="outline"
+    //       role="combobox"
+    //       aria-expanded={isOpen}
+    //       className="w-full justify-between"
+    //     >
+    //       {inputValue
+    //         ? bowlers.find((bowler) => bowler === inputValue)
+    //         : "Select bowler"}
+    //       <ChevronsUpDown className="opacity-50" />
+    //     </Button>
+    //   </PopoverTrigger>
+    //   <PopoverContent>
+    <Command className="h-40">
+      <CommandInput
+        placeholder="Select a new bowler"
+        value={newBowler}
+        onValueChange={setNewBowler}
+      ></CommandInput>
+      <CommandList>
+        {newBowler && (
+          <CommandEmpty onClick={() => handleAddItem()}>
+            Add "{newBowler}"
+          </CommandEmpty>
+        )}
+        <CommandGroup>
+          {bowlers.map((bowler) => (
+            <CommandItem
+              key={bowler}
+              value={bowler}
+              onSelect={(currentValue) => {
+                setInputValue(currentValue === inputValue ? "" : currentValue);
+                onBowlerChange(bowler);
+                setIsOpen(false);
+              }}
+            >
+              {bowler}
+              <Check
+                className={cn(
+                  "ml-auto",
+                  inputValue === bowler ? "opacity-100" : "opacity-0"
+                )}
+              />
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+    //   </PopoverContent>
+    // </Popover>
   );
 };
 

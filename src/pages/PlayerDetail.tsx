@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import useStore from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
@@ -45,20 +45,20 @@ function PlayerDetail() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const {striker, nonStriker, bowler} = values;
+    const { striker, nonStriker, bowler } = values;
     setOpeningPlayers(striker, nonStriker, bowler);
     // if (overs === oversBowled.length || innings[0].wickets === 10) {
     //   startSecondInning();
     // }
     navigate(`/match`);
   }
-  
+
   return (
     <section>
-      <div className="flex items-center pt-5">
+      <div className="flex items-center">
         <Button size="icon" variant="ghost">
           <Link to={present.activeInning === 0 ? "/match-details" : "/match"}>
-            <ChevronLeft />
+            <ArrowLeft />
           </Link>
         </Button>
         <h1 className="inline-block ms-5">Select opening players</h1>

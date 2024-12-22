@@ -24,7 +24,7 @@ export function Scorecard() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="ml-auto text-xs font-semibold p-1">
+        <Button variant="ghost" className="p-0 font-normal">
           Scorecard
         </Button>
       </DialogTrigger>

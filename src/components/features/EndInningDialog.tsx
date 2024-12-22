@@ -18,12 +18,20 @@ interface DialogProps {
   runs: number;
 }
 
-export const EndInningDialog: React.FC<DialogProps> = ({showDialog, setShowDialog}) => {
+export const EndInningDialog: React.FC<DialogProps> = ({
+  showDialog,
+  setShowDialog,
+}) => {
   const navigate = useNavigate();
   const { present } = useStore();
-  const {innings, overs, secondInnTeamName} = present;
+  const { innings, overs, secondInnTeamName } = present;
 
   if (innings.length === 0) return null;
+
+  function handleOk() {
+    setShowDialog();
+    navigate("/player-details");
+  }
 
   return (
     <Dialog open={showDialog} onOpenChange={setShowDialog}>
@@ -33,13 +41,15 @@ export const EndInningDialog: React.FC<DialogProps> = ({showDialog, setShowDialo
             End of the first inning
           </DialogTitle>
         </DialogHeader>
-        <p>{`${secondInnTeamName} need ${innings[0].runs + 1} runs in ${overs} overs.`}</p>
+        <p>{`${secondInnTeamName} need ${
+          innings[0].runs + 1
+        } runs in ${overs} overs.`}</p>
         <p>Required Run Rate: {(innings[0].runs + 1) / overs}</p>
         <DialogFooter className="flex flex-row gap-1 justify-end">
           <Button variant="ghost" className="w-20" onClick={setShowDialog}>
             Cancel
           </Button>
-          <Button className="w-20" onClick={() => navigate("/player-details")}>
+          <Button className="w-20" onClick={handleOk}>
             Ok
           </Button>
         </DialogFooter>

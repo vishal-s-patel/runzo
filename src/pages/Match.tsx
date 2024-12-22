@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import useStore from "@/store";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, Binary, EllipsisVertical, Power } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import ExtrasDialog from "@/components/ui/extras-dialog";
 import {
@@ -31,6 +31,12 @@ import Summary from "@/components/layouts/summary";
 import ThisOver from "@/components/layouts/current-over";
 import { EndInningDialog } from "@/components/features/EndInningDialog";
 import { Scorecard } from "@/components/features/ScorecardDialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import ConfirmDialog from "@/components/ui/confirm-dialog";
 
 const RUNS = [0, 1, 2, 3, 4, 6];
 const EXTRAS: ReadonlyArray<{ label: string; description: string }> = [
@@ -41,13 +47,7 @@ const EXTRAS: ReadonlyArray<{ label: string; description: string }> = [
 ];
 
 function Match() {
-  const {
-    present,
-    updateOver,
-    addWicket,
-    addNewBowler,
-    undo
-  } = useStore();
+  const { present, updateOver, addWicket, addNewBowler, undo } = useStore();
 
   const navigate = useNavigate();
   // call in useeffect
@@ -55,14 +55,23 @@ function Match() {
   //   navigate("/match-details")
   // }
 
-  const { team1, team2, showBowlerDialog, activeBatters, overs, innings, activeInning, isMatchFinished } = present;
+  const {
+    team1,
+    team2,
+    showBowlerDialog,
+    activeBatters,
+    overs,
+    innings,
+    activeInning,
+    isMatchFinished,
+  } = present;
 
   function handleBallUpdate(run: number) {
     if (showBowlerDialog) {
       setShoNewBowlerDialog(true);
       return;
     }
-    if (innings[activeInning].overs.length === overs) {
+    if (innings[activeInning].overs.length === overs && activeInning === 0) {
       setShowEndInnDialog(true);
       return;
     }
@@ -90,17 +99,15 @@ function Match() {
   const [showEndInnDialog, setShowEndInnDialog] = useState<boolean>(false);
   const [additionalRun, setAdditionalRun] = useState<string>("5");
 
-  
-
   const handleBowlerChange = (bowler: string) => {
     setSelectedBowler(bowler);
   };
 
   useEffect(() => {
-    if(innings.length === 0) {
+    if (innings.length === 0) {
       navigate("/match-details");
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     if (showBowlerDialog) {
@@ -109,34 +116,61 @@ function Match() {
   }, [showBowlerDialog]);
 
   useEffect(() => {
-    if (innings[activeInning]?.overs.length === overs || (innings[0]?.wickets === 10 && activeInning === 0)) { //max wicket
+    if (
+      innings[activeInning]?.overs.length === overs ||
+      (innings[0]?.wickets === 10 && activeInning === 0)
+    ) {
+      //max wicket
       setShowEndInnDialog(true);
     }
-  }, [innings[activeInning]?.overs, innings[0]?.wickets]);
+  }, [innings[0]?.overs, innings[0]?.wickets]);
 
   useEffect(() => {
     if (isMatchFinished) {
       navigate("/post-match");
     }
-  }, [isMatchFinished])
+  }, [isMatchFinished]);
 
   const handleEndInning = () => {
     setShowEndInnDialog(!showEndInnDialog);
   };
+
+  function handleEndMatch() {
+    navigate("/match-details");
+  }
 
   return (
     <section>
       <div className="flex items-center border-b">
         <Button size="icon" variant="ghost">
           <Link to="/match-details">
-            <ChevronLeft />
+            <ArrowLeft />
           </Link>
         </Button>
         <h1 className="inline-block ms-5">
           {" "}
           {team1} vs {team2}
         </h1>
-        <Scorecard />
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" className="ml-auto">
+              <EllipsisVertical />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="mr-2 w-40">
+            <ul>
+              <li className="py-1 flex items-center gap-1">
+                <Binary />
+                <Scorecard />
+              </li>
+              <li className="py-1 flex items-center gap-1">
+                <Power />
+                <ConfirmDialog btnText="End Match" onConfirm={handleEndMatch} />
+              </li>
+            </ul>
+          </PopoverContent>
+        </Popover>
       </div>
       <ScoreBoard />
       <Summary />
@@ -186,8 +220,10 @@ function Match() {
                 <DialogContent className="w-11/12 rounded">
                   <DialogHeader>
                     <DialogTitle>Select additional run</DialogTitle>
-                    <Select value={additionalRun}
-                    onValueChange={(value) => setAdditionalRun(value)}>
+                    <Select
+                      value={additionalRun}
+                      onValueChange={(value) => setAdditionalRun(value)}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select run" />
                       </SelectTrigger>
@@ -201,7 +237,12 @@ function Match() {
                   </DialogHeader>
                   <DialogFooter className="justify-end flex-row">
                     <DialogClose asChild>
-                      <Button type="button" onClick={() => handleBallUpdate(parseInt(additionalRun))}>
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          handleBallUpdate(parseInt(additionalRun))
+                        }
+                      >
                         Yes
                       </Button>
                     </DialogClose>
@@ -375,7 +416,13 @@ function Match() {
         </DialogContent>
       </Dialog>
 
-      <EndInningDialog setShowDialog={handleEndInning} overs={overs} runs={innings[0]?.runs} showDialog={showEndInnDialog} teamName={''}/>
+      <EndInningDialog
+        setShowDialog={handleEndInning}
+        overs={overs}
+        runs={innings[0]?.runs}
+        showDialog={showEndInnDialog}
+        teamName={""}
+      />
     </section>
   );
 }
