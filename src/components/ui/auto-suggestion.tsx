@@ -29,8 +29,17 @@ const AutoSuggestion = ({ onBowlerChange }: AutoSuggestionProps) => {
         )
         .map((bowler) => bowler.playerName) || []
   );
+  const [error, setError] = useState<string>("");
 
   const handleAddItem = () => {
+    if (
+      innings[activeInning].bowlers.findIndex(
+        ({ playerName }) => playerName === newBowler.trim()
+      ) !== -1
+    ) {
+      setError("Bowler already exists!");
+      return;
+    }
     if (newBowler.trim()) {
       setBowlers((prev) => [...prev, newBowler.trim()]);
       onBowlerChange(newBowler);
@@ -53,40 +62,45 @@ const AutoSuggestion = ({ onBowlerChange }: AutoSuggestionProps) => {
     //     </Button>
     //   </PopoverTrigger>
     //   <PopoverContent>
-    <Command className="h-40">
-      <CommandInput
-        placeholder="Select a new bowler"
-        value={newBowler}
-        onValueChange={setNewBowler}
-      ></CommandInput>
-      <CommandList>
-        {newBowler && (
-          <CommandEmpty onClick={() => handleAddItem()}>
-            Add "{newBowler}"
-          </CommandEmpty>
-        )}
-        <CommandGroup>
-          {bowlers.map((bowler) => (
-            <CommandItem
-              key={bowler}
-              value={bowler}
-              onSelect={(currentValue) => {
-                setInputValue(currentValue === inputValue ? "" : currentValue);
-                onBowlerChange(bowler);
-              }}
-            >
-              {bowler}
-              <Check
-                className={cn(
-                  "ml-auto",
-                  inputValue === bowler ? "opacity-100" : "opacity-0"
-                )}
-              />
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </Command>
+    <>
+      <Command className="h-40">
+        <CommandInput
+          placeholder={"Type/Select a new bowler"}
+          value={newBowler}
+          onValueChange={setNewBowler}
+        ></CommandInput>
+        <CommandList>
+          {newBowler && (
+            <CommandEmpty onClick={() => handleAddItem()}>
+              Add "{newBowler}"
+            </CommandEmpty>
+          )}
+          <CommandGroup>
+            {bowlers.map((bowler) => (
+              <CommandItem
+                key={bowler}
+                value={bowler}
+                onSelect={(currentValue) => {
+                  setInputValue(
+                    currentValue === inputValue ? "" : currentValue
+                  );
+                  onBowlerChange(bowler);
+                }}
+              >
+                {bowler}
+                <Check
+                  className={cn(
+                    "ml-auto",
+                    inputValue === bowler ? "opacity-100" : "opacity-0"
+                  )}
+                />
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+      <p className="text-sm text-red-500">{error}</p>
+    </>
     //   </PopoverContent>
     // </Popover>
   );

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { Batter, Bowler, Inning, TossDecision } from "./types";
-import { immer } from 'zustand/middleware/immer';
+import { immer } from "zustand/middleware/immer";
 
 export const LOCAL_STORAGE_KEY = "scores";
 
@@ -11,12 +11,17 @@ function saveToLocalStorage(state: CricketStoreState) {
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
 }
 
-// function loadFromLocalStorage(): Partial<CricketStoreState> | null {
-//   const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
-//   return savedState ? JSON.parse(savedState) : null;
-// }
+function loadFromLocalStorage(): Partial<CricketStoreState> | null {
+  const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+  return savedState ? JSON.parse(savedState) : null;
+}
 
-function getTeamName(tossWinner: string, tossDecision: string, team1: string, team2: string) {
+function getTeamName(
+  tossWinner: string,
+  tossDecision: string,
+  team1: string,
+  team2: string
+) {
   let currentInning;
   if (tossDecision === "bat") {
     currentInning = tossWinner;
@@ -40,33 +45,50 @@ type CricketStore = {
   innings: Array<Inning>;
   activeBatters: Array<Batter>;
   activeBowler: Bowler;
-  currentOver: Array<{ val: string, extra: string | null }>
+  currentOver: Array<{ val: string; extra: string | null }>;
   showBowlerDialog: boolean;
   isMatchFinished: boolean;
   description: string;
   matchWinner: string;
   firstInnTeamName: string;
   secondInnTeamName: string;
-}
+};
 
 type CricketStoreState = {
   past: CricketStore[];
   present: CricketStore;
-}
+};
 
 type CricketStoreActions = {
-  setMatchDetails: (team1: string, team2: string, tossWinner: string, tossDecision: TossDecision, overs: number) => void,
-  setOpeningPlayers: (striker: string, nonStriker: string, bowler: string) => void,
-  updateOver: (run: number) => void,
-  rotateStrikes: () => void,
-  changeOver: () => void,
-  addNewBowler: (bowlerName: string) => void,
-  addExtra: (runs: number, type: string) => void,
-  addWicket: (wicketType: string, outBatsman: string, helper: string, run: number, newBatsman: string, extra: string) => void,
-  checkResult: () => void,
+  setMatchDetails: (
+    team1: string,
+    team2: string,
+    tossWinner: string,
+    tossDecision: TossDecision,
+    overs: number
+  ) => void;
+  setOpeningPlayers: (
+    striker: string,
+    nonStriker: string,
+    bowler: string
+  ) => void;
+  updateOver: (run: number) => void;
+  rotateStrikes: () => void;
+  changeOver: () => void;
+  addNewBowler: (bowlerName: string) => void;
+  addExtra: (runs: number, type: string) => void;
+  addWicket: (
+    wicketType: string,
+    outBatsman: string,
+    helper: string,
+    run: number,
+    newBatsman: string,
+    extra: string
+  ) => void;
+  checkResult: () => void;
   undo: () => void;
   reset: () => void;
-}
+};
 
 const initialState: CricketStoreState = {
   past: [],
@@ -87,7 +109,8 @@ const initialState: CricketStoreState = {
     matchWinner: "",
     firstInnTeamName: "",
     secondInnTeamName: "",
-  }
+  },
+  ...loadFromLocalStorage(),
 };
 
 const useStore = create<CricketStoreState & CricketStoreActions>()(
@@ -102,12 +125,17 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             state.present.tossWinner = tossWinner;
             state.present.tossDecision = tossDecision;
             state.present.overs = overs;
-            const { first, second } = getTeamName(tossWinner, tossDecision, team1, team2);
+            const { first, second } = getTeamName(
+              tossWinner,
+              tossDecision,
+              team1,
+              team2
+            );
             state.present.firstInnTeamName = first;
             state.present.secondInnTeamName = second;
             state.present.innings = [];
             saveToLocalStorage(state);
-          })
+          });
         },
         setOpeningPlayers: (striker, nonStriker, bowler) => {
           const { present } = get();
@@ -121,21 +149,41 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
               overs: [],
               balls: 0,
               bowlers: [
-                { playerName: bowler, overs: 0, runs: 0, balls: 0, maidens: 0, wickets: 0 }
+                {
+                  playerName: bowler,
+                  overs: 0,
+                  runs: 0,
+                  balls: 0,
+                  maidens: 0,
+                  wickets: 0,
+                },
               ],
               batters: [
                 { playerName: striker, runs: 0, balls: 0, fours: 0, sixes: 0 },
-                { playerName: nonStriker, runs: 0, balls: 0, fours: 0, sixes: 0 }
-              ]
+                {
+                  playerName: nonStriker,
+                  runs: 0,
+                  balls: 0,
+                  fours: 0,
+                  sixes: 0,
+                },
+              ],
             });
             state.present.activeBatters = [
               { playerName: striker, runs: 0, balls: 0, fours: 0, sixes: 0 },
-              { playerName: nonStriker, runs: 0, balls: 0, fours: 0, sixes: 0 }
+              { playerName: nonStriker, runs: 0, balls: 0, fours: 0, sixes: 0 },
             ];
-            state.present.activeBowler = { playerName: bowler, overs: 0, runs: 0, balls: 0, maidens: 0, wickets: 0 };
+            state.present.activeBowler = {
+              playerName: bowler,
+              overs: 0,
+              runs: 0,
+              balls: 0,
+              maidens: 0,
+              wickets: 0,
+            };
             state.present.currentOver = [];
             saveToLocalStorage(state);
-          })
+          });
         },
         updateOver: (run) => {
           const { present } = get();
@@ -146,29 +194,56 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             //update over
             state.present.innings[present.activeInning].balls += 1;
             //update current over
-            state.present.currentOver.push({ val: run.toString(), extra: null });
+            state.present.currentOver.push({
+              val: run.toString(),
+              extra: null,
+            });
             //update batsman stats
-            const batIndx = present.innings[present.activeInning].batters.findIndex(({ playerName }) => present.activeBatters[0].playerName === playerName);
+            const batIndx = present.innings[
+              present.activeInning
+            ].batters.findIndex(
+              ({ playerName }) =>
+                present.activeBatters[0].playerName === playerName
+            );
             state.present.activeBatters[0].runs += run;
-            state.present.innings[present.activeInning].batters[batIndx].runs += run;
+            state.present.innings[present.activeInning].batters[batIndx].runs +=
+              run;
             state.present.activeBatters[0].balls += 1;
-            state.present.innings[present.activeInning].batters[batIndx].balls += 1;
+            state.present.innings[present.activeInning].batters[
+              batIndx
+            ].balls += 1;
             if (run === 4) {
               state.present.activeBatters[0].fours += 1;
-              state.present.innings[present.activeInning].batters[batIndx].fours += 1;
+              state.present.innings[present.activeInning].batters[
+                batIndx
+              ].fours += 1;
             }
             if (run === 6) {
               state.present.activeBatters[0].sixes += 1;
-              state.present.innings[present.activeInning].batters[batIndx].sixes += 1;
+              state.present.innings[present.activeInning].batters[
+                batIndx
+              ].sixes += 1;
             }
             //update bowler stats
-            const bowlIndx = present.innings[present.activeInning].bowlers.findIndex(({ playerName }) => present.activeBowler.playerName === playerName);
+            const bowlIndx = present.innings[
+              present.activeInning
+            ].bowlers.findIndex(
+              ({ playerName }) => present.activeBowler.playerName === playerName
+            );
             state.present.activeBowler.balls += 1;
-            state.present.innings[present.activeInning].bowlers[bowlIndx].balls += 1;
+            state.present.innings[present.activeInning].bowlers[
+              bowlIndx
+            ].balls += 1;
             state.present.activeBowler.runs += run;
-            state.present.innings[present.activeInning].bowlers[bowlIndx].runs += run;
+            state.present.innings[present.activeInning].bowlers[
+              bowlIndx
+            ].runs += run;
           });
-          if ((run % 2 !== 0 && present.innings[present.activeInning].balls < 5) || (run % 2 === 0 && present.innings[present.activeInning].balls === 5)) {
+          if (
+            (run % 2 !== 0 &&
+              present.innings[present.activeInning].balls < 5) ||
+            (run % 2 === 0 && present.innings[present.activeInning].balls === 5)
+          ) {
             get().rotateStrikes();
           }
           get().changeOver();
@@ -180,85 +255,167 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             state.present.activeBatters[0] = present.activeBatters[1];
             state.present.activeBatters[1] = present.activeBatters[0];
             saveToLocalStorage(state);
-          })
+          });
         },
         changeOver: () => {
           const { present } = get();
           set((state) => {
             if (present.innings[present.activeInning].balls === 6) {
-              state.present.showBowlerDialog = present.innings[present.activeInning].overs.length + 1 !== present.overs ? true : false;
-              state.present.innings[present.activeInning].overs.push(present.currentOver);
+              state.present.showBowlerDialog =
+                present.innings[present.activeInning].overs.length + 1 !==
+                present.overs
+                  ? true
+                  : false;
+              state.present.innings[present.activeInning].overs.push(
+                present.currentOver
+              );
               state.present.innings[present.activeInning].balls = 0;
-              const bowlIndex = present.innings[present.activeInning].bowlers.findIndex(({ playerName }) => playerName === present.activeBowler.playerName);
-              state.present.innings[present.activeInning].bowlers[bowlIndex].balls = 0;
-              state.present.innings[present.activeInning].bowlers[bowlIndex].overs += 1;
+              const bowlIndex = present.innings[
+                present.activeInning
+              ].bowlers.findIndex(
+                ({ playerName }) =>
+                  playerName === present.activeBowler.playerName
+              );
+              state.present.innings[present.activeInning].bowlers[
+                bowlIndex
+              ].balls = 0;
+              state.present.innings[present.activeInning].bowlers[
+                bowlIndex
+              ].overs += 1;
             }
             saveToLocalStorage(state);
-          })
+          });
         },
         addNewBowler: (bowlerName) => {
           const { present } = get();
           set((state) => {
-            const bowler = present.innings.at(-1)?.bowlers.find(({ playerName }) => playerName === bowlerName);
+            const bowler = present.innings
+              .at(-1)
+              ?.bowlers.find(({ playerName }) => playerName === bowlerName);
             if (bowler) {
               state.present.activeBowler = bowler;
             } else {
-              const newBowler = { playerName: bowlerName, overs: 0, balls: 0, maidens: 0, wickets: 0, runs: 0 };
+              const newBowler = {
+                playerName: bowlerName,
+                overs: 0,
+                balls: 0,
+                maidens: 0,
+                wickets: 0,
+                runs: 0,
+              };
               state.present.activeBowler = newBowler;
-              state.present.innings[present.activeInning].bowlers.push(newBowler);
+              state.present.innings[present.activeInning].bowlers.push(
+                newBowler
+              );
             }
             state.present.showBowlerDialog = false;
             state.present.currentOver = [];
-          })
+          });
         },
         addExtra: (runs, type) => {
           const { present } = get();
           set((state) => {
             state.past.push(present);
             let totalRuns = runs;
-            const bowlIndex = present.innings[present.activeInning].bowlers.findIndex(({ playerName }) => playerName === present.activeBowler.playerName);
+            const bowlIndex = present.innings[
+              present.activeInning
+            ].bowlers.findIndex(
+              ({ playerName }) => playerName === present.activeBowler.playerName
+            );
             if (type === "WD" || type === "NB") {
               totalRuns += 1;
-              state.present.currentOver.push({ val: (runs + 1).toString(), extra: type });
+              state.present.currentOver.push({
+                val: (runs + 1).toString(),
+                extra: type,
+              });
             } else {
-              const batIndex = present.innings[present.activeInning].batters.findIndex(({ playerName }) => playerName === present.activeBatters[0].playerName);
+              const batIndex = present.innings[
+                present.activeInning
+              ].batters.findIndex(
+                ({ playerName }) =>
+                  playerName === present.activeBatters[0].playerName
+              );
               state.present.currentOver.push({ val: runs + type, extra: null });
               state.present.activeBowler.balls += 1;
-              state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
+              state.present.innings[present.activeInning].bowlers[
+                bowlIndex
+              ].balls += 1;
               state.present.activeBatters[0].balls += 1;
-              state.present.innings[present.activeInning].batters[batIndex].balls += 1;
+              state.present.innings[present.activeInning].batters[
+                batIndex
+              ].balls += 1;
               state.present.innings[present.activeInning].balls += 1;
             }
             state.present.innings[present.activeInning].runs += totalRuns;
             state.present.activeBowler.runs += totalRuns;
-            state.present.innings[present.activeInning].bowlers[bowlIndex].runs += totalRuns;
+            state.present.innings[present.activeInning].bowlers[
+              bowlIndex
+            ].runs += totalRuns;
             saveToLocalStorage(state);
           });
-          if ((runs > 0 || present.innings[present.activeInning].balls === 5) && (type !== "WD" && type !== "NB")) {
-            if ((runs % 2 !== 0 && present.innings[present.activeInning].balls < 5) || (runs % 2 === 0 && present.innings[present.activeInning].balls === 5)) {
-              get().rotateStrikes();
-            }
+
+          if (
+            (runs % 2 !== 0 &&
+              (present.innings[present.activeInning].balls < 5 ||
+              (type === "WD" || type === "NB"))) ||
+            (runs % 2 === 0 &&
+              present.innings[present.activeInning].balls === 5 && type !== "WD" && type !== "NB")
+          ) {
+            get().rotateStrikes();
           }
+
           get().changeOver();
         },
-        addWicket: (wicketType, outBatsman, whoHelped, extraRuns, newBatsman, extra) => {
+        addWicket: (
+          wicketType,
+          outBatsman,
+          whoHelped,
+          extraRuns,
+          newBatsman,
+          extra
+        ) => {
           const { present } = get();
           set((state) => {
             state.past.push(present);
-            const batIndex = present.innings[present.activeInning].batters.findIndex(({ playerName }) => playerName === present.activeBatters[0].playerName);
-            const bowlIndex = present.innings[present.activeInning].bowlers.findIndex(({ playerName }) => playerName === present.activeBowler.playerName);
-            const newBatter: Batter = { playerName: newBatsman, runs: 0, balls: 0, fours: 0, sixes: 0 };
+            const batIndex = present.innings[
+              present.activeInning
+            ].batters.findIndex(
+              ({ playerName }) =>
+                playerName === present.activeBatters[0].playerName
+            );
+            const bowlIndex = present.innings[
+              present.activeInning
+            ].bowlers.findIndex(
+              ({ playerName }) => playerName === present.activeBowler.playerName
+            );
+            const newBatter: Batter = {
+              playerName: newBatsman,
+              runs: 0,
+              balls: 0,
+              fours: 0,
+              sixes: 0,
+            };
             switch (wicketType) {
               case "bowled":
                 state.present.currentOver.push({ val: "W", extra: null });
                 state.present.activeBowler.balls += 1;
                 state.present.activeBowler.wickets += 1;
                 state.present.innings[present.activeInning].balls += 1;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].wickets += 1;
-                state.present.innings[present.activeInning].batters[batIndex].balls += 1;
-                state.present.innings[present.activeInning].batters[batIndex].wicketType = wicketType;
-                state.present.innings[present.activeInning].batters[batIndex].bowler = present.activeBowler.playerName;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].balls += 1;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].wickets += 1;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].balls += 1;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].wicketType = wicketType;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].bowler = present.activeBowler.playerName;
                 state.present.activeBatters.shift();
                 state.present.activeBatters.unshift(newBatter);
                 break;
@@ -267,49 +424,93 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
                 state.present.activeBowler.balls += 1;
                 state.present.activeBowler.wickets += 1;
                 state.present.innings[present.activeInning].balls += 1;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].wickets += 1;
-                state.present.innings[present.activeInning].batters[batIndex].balls += 1;
-                state.present.innings[present.activeInning].batters[batIndex].helper = whoHelped;
-                state.present.innings[present.activeInning].batters[batIndex].wicketType = wicketType;
-                state.present.innings[present.activeInning].batters[batIndex].bowler = present.activeBowler.playerName;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].balls += 1;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].wickets += 1;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].balls += 1;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].helper = whoHelped;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].wicketType = wicketType;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].bowler = present.activeBowler.playerName;
                 state.present.activeBatters.shift();
                 state.present.activeBatters.unshift(newBatter);
                 break;
               case "stumping":
-                state.present.currentOver.push({ val: "W", extra: extra || null });
+                state.present.currentOver.push({
+                  val: "W",
+                  extra: extra || null,
+                });
                 state.present.activeBowler.wickets += 1;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].wickets += 1;
-                state.present.innings[present.activeInning].batters[batIndex].helper = whoHelped;
-                state.present.innings[present.activeInning].batters[batIndex].wicketType = wicketType;
-                state.present.innings[present.activeInning].batters[batIndex].bowler = present.activeBowler.playerName;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].wickets += 1;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].helper = whoHelped;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].wicketType = wicketType;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].bowler = present.activeBowler.playerName;
                 if (extra !== "WD" && extra !== "NB") {
                   state.present.activeBowler.balls += 1;
                   state.present.innings[present.activeInning].balls += 1;
-                  state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
-                  state.present.innings[present.activeInning].batters[batIndex].balls += 1;
+                  state.present.innings[present.activeInning].bowlers[
+                    bowlIndex
+                  ].balls += 1;
+                  state.present.innings[present.activeInning].batters[
+                    batIndex
+                  ].balls += 1;
                 } else {
                   state.present.innings[present.activeInning].runs += 1;
-                  state.present.innings[present.activeInning].bowlers[bowlIndex].runs += 1;
+                  state.present.innings[present.activeInning].bowlers[
+                    bowlIndex
+                  ].runs += 1;
                   state.present.activeBowler.runs += 1;
                 }
                 state.present.activeBatters.shift();
                 state.present.activeBatters.unshift(newBatter);
                 break;
               case "hitWicket":
-                state.present.currentOver.push({ val: "W", extra: extra || null });
+                state.present.currentOver.push({
+                  val: "W",
+                  extra: extra || null,
+                });
                 state.present.activeBowler.wickets += 1;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].wickets += 1;
-                state.present.innings[present.activeInning].batters[batIndex].wicketType = wicketType;
-                state.present.innings[present.activeInning].batters[batIndex].bowler = present.activeBowler.playerName;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].wickets += 1;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].wicketType = wicketType;
+                state.present.innings[present.activeInning].batters[
+                  batIndex
+                ].bowler = present.activeBowler.playerName;
                 if (extra !== "WD" && extra !== "NB") {
                   state.present.activeBowler.balls += 1;
                   state.present.innings[present.activeInning].balls += 1;
-                  state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
-                  state.present.innings[present.activeInning].batters[batIndex].balls += 1;
+                  state.present.innings[present.activeInning].bowlers[
+                    bowlIndex
+                  ].balls += 1;
+                  state.present.innings[present.activeInning].batters[
+                    batIndex
+                  ].balls += 1;
                 } else {
                   state.present.innings[present.activeInning].runs += 1;
-                  state.present.innings[present.activeInning].bowlers[bowlIndex].runs += 1;
+                  state.present.innings[present.activeInning].bowlers[
+                    bowlIndex
+                  ].runs += 1;
                   state.present.activeBowler.runs += 1;
                 }
                 state.present.activeBatters.shift();
@@ -317,56 +518,112 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
                 break;
               case "runOutNonStriker":
               case "runOutStriker":
-                state.present.currentOver.push({ val: extraRuns > 0 ? extraRuns.toString() + "W" : "W", extra: extra || null });
-                const obIndex = present.innings[present.activeInning].batters.findIndex(({ playerName }) => playerName === outBatsman);
-                state.present.innings[present.activeInning].batters[obIndex].wicketType = wicketType;
-                state.present.innings[present.activeInning].batters[obIndex].helper = whoHelped;
+                state.present.currentOver.push({
+                  val: extraRuns > 0 ? extraRuns.toString() + "W" : "W",
+                  extra: extra || null,
+                });
+                const obIndex = present.innings[
+                  present.activeInning
+                ].batters.findIndex(
+                  ({ playerName }) => playerName === outBatsman
+                );
+                state.present.innings[present.activeInning].batters[
+                  obIndex
+                ].wicketType = wicketType;
+                state.present.innings[present.activeInning].batters[
+                  obIndex
+                ].helper = whoHelped;
 
-                const outIndex = present.activeBatters.findIndex(({ playerName }) => playerName === outBatsman);
+                const outIndex = present.activeBatters.findIndex(
+                  ({ playerName }) => playerName === outBatsman
+                );
                 if (outIndex === 0) {
                   if (extra === "") {
-                    state.present.innings[present.activeInning].batters[obIndex].runs += extraRuns;
+                    state.present.innings[present.activeInning].batters[
+                      obIndex
+                    ].runs += extraRuns;
                   }
                   if (extra !== "WD" && extra !== "NB") {
                     state.present.activeBowler.balls += 1;
                     state.present.innings[present.activeInning].balls += 1;
-                    state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
-                    state.present.innings[present.activeInning].batters[obIndex].balls += 1;
+                    state.present.innings[present.activeInning].bowlers[
+                      bowlIndex
+                    ].balls += 1;
+                    state.present.innings[present.activeInning].batters[
+                      obIndex
+                    ].balls += 1;
                   }
                 } else {
-                  const noIndex = present.innings[present.activeInning].batters.findIndex(({ playerName }) => playerName === present.activeBatters[0].playerName);
+                  const noIndex = present.innings[
+                    present.activeInning
+                  ].batters.findIndex(
+                    ({ playerName }) =>
+                      playerName === present.activeBatters[0].playerName
+                  );
                   if (extra === "") {
-                    state.present.innings[present.activeInning].batters[noIndex].runs += extraRuns;
+                    state.present.innings[present.activeInning].batters[
+                      noIndex
+                    ].runs += extraRuns;
                   }
                   if (extra !== "WD" && extra !== "NB") {
                     state.present.activeBowler.balls += 1;
                     state.present.innings[present.activeInning].balls += 1;
-                    state.present.innings[present.activeInning].bowlers[bowlIndex].balls += 1;
-                    state.present.innings[present.activeInning].batters[noIndex].balls += 1;
+                    state.present.innings[present.activeInning].bowlers[
+                      bowlIndex
+                    ].balls += 1;
+                    state.present.innings[present.activeInning].batters[
+                      noIndex
+                    ].balls += 1;
                     state.present.activeBatters[0].balls += 1;
                   }
                 }
                 state.present.innings[present.activeInning].runs += extraRuns;
                 state.present.activeBowler.runs += extraRuns;
-                state.present.innings[present.activeInning].bowlers[bowlIndex].runs += extraRuns;
+                state.present.innings[present.activeInning].bowlers[
+                  bowlIndex
+                ].runs += extraRuns;
                 if (extra === "WD" || extra === "NB") {
                   state.present.innings[present.activeInning].runs += 1;
                   state.present.activeBowler.runs += 1;
-                  state.present.innings[present.activeInning].bowlers[bowlIndex].runs += 1;
+                  state.present.innings[present.activeInning].bowlers[
+                    bowlIndex
+                  ].runs += 1;
                 }
                 state.present.activeBatters.splice(outIndex, 1);
                 if (wicketType === "runOutStriker") {
-                  state.present.activeBatters.unshift({ playerName: newBatsman, runs: 0, balls: 0, fours: 0, sixes: 0 });
+                  state.present.activeBatters.unshift({
+                    playerName: newBatsman,
+                    runs: 0,
+                    balls: 0,
+                    fours: 0,
+                    sixes: 0,
+                  });
                 } else {
-                  state.present.activeBatters.push({ playerName: newBatsman, runs: 0, balls: 0, fours: 0, sixes: 0 });
+                  state.present.activeBatters.push({
+                    playerName: newBatsman,
+                    runs: 0,
+                    balls: 0,
+                    fours: 0,
+                    sixes: 0,
+                  });
                 }
                 break;
             }
             state.present.innings[present.activeInning].wickets += 1;
-            state.present.innings[present.activeInning].batters.push({ playerName: newBatsman, runs: 0, balls: 0, fours: 0, sixes: 0 });
+            state.present.innings[present.activeInning].batters.push({
+              playerName: newBatsman,
+              runs: 0,
+              balls: 0,
+              fours: 0,
+              sixes: 0,
+            });
           });
           get().checkResult();
-          if (present.innings[present.activeInning].balls === 5 && extra !== "WD" && extra !== "NB") {
+          if (
+            present.innings[present.activeInning].balls === 5 &&
+            extra !== "WD" &&
+            extra !== "NB"
+          ) {
             get().rotateStrikes();
           }
           get().changeOver();
@@ -377,37 +634,65 @@ const useStore = create<CricketStoreState & CricketStoreActions>()(
             if (present.activeInning === 1) {
               if (present.innings[1].runs > present.innings[0].runs) {
                 state.present.isMatchFinished = true;
-                state.present.description = `${present.secondInnTeamName} won by ${MAX_WICKETS - present.innings[1].wickets} wickets`;
+                state.present.description = `${
+                  present.secondInnTeamName
+                } won by ${MAX_WICKETS - present.innings[1].wickets} wickets`;
                 state.present.matchWinner = present.secondInnTeamName;
-              } else if (present.innings[1].runs < present.innings[0].runs && (present.innings[1].overs.length === present.overs || present.innings[1].wickets === MAX_WICKETS)) {
+              } else if (
+                present.innings[1].runs < present.innings[0].runs &&
+                (present.innings[1].overs.length === present.overs ||
+                  present.innings[1].wickets === MAX_WICKETS)
+              ) {
                 state.present.isMatchFinished = true;
-                state.present.description = `${present.firstInnTeamName} won by ${present.innings[0].runs - present.innings[1].runs} runs`;
+                state.present.description = `${
+                  present.firstInnTeamName
+                } won by ${
+                  present.innings[0].runs - present.innings[1].runs
+                } runs`;
                 state.present.matchWinner = present.firstInnTeamName;
               }
             }
-          })
+          });
         },
         undo: () => {
           set((state) => {
             if (state.past.length === 0) return;
             state.present = state.past.pop()!;
-          })
+            saveToLocalStorage(state);
+          });
         },
         reset: () => {
           localStorage.removeItem(LOCAL_STORAGE_KEY);
           set((state) => {
-            state.past = [];
-            state.present = initialState.present
+            (state.past = []),
+              (state.present = {
+                team1: "",
+                team2: "",
+                tossWinner: "",
+                tossDecision: "",
+                overs: 0,
+                activeInning: 0,
+                innings: [],
+                activeBatters: [],
+                activeBowler: {} as Bowler,
+                currentOver: [],
+                showBowlerDialog: false,
+                isMatchFinished: false,
+                description: "",
+                matchWinner: "",
+                firstInnTeamName: "",
+                secondInnTeamName: "",
+              });
           });
-        }
-      }
+        },
+      };
     })
   )
-)
+);
 
 // interface ScoreState {
 //   past: ScoreState[],
-//   present: 
+//   present:
 //   innings: Array<{
 //     run: number;
 //     wickets: number;

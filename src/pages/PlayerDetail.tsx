@@ -24,14 +24,7 @@ const formSchema = z.object({
 });
 
 function PlayerDetail() {
-  const {
-    setOpeningPlayers,
-    present,
-    // startSecondInning,
-    // innings,
-    // oversBowled,
-    // overs,
-  } = useStore();
+  const { setOpeningPlayers, present } = useStore();
 
   const navigate = useNavigate();
 
@@ -47,9 +40,6 @@ function PlayerDetail() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     const { striker, nonStriker, bowler } = values;
     setOpeningPlayers(striker, nonStriker, bowler);
-    // if (overs === oversBowled.length || innings[0].wickets === 10) {
-    //   startSecondInning();
-    // }
     navigate(`/match`);
   }
 

@@ -42,7 +42,7 @@ const RUNS = [0, 1, 2, 3, 4, 6];
 const EXTRAS: ReadonlyArray<{ label: string; description: string }> = [
   { label: "WD", description: "Wide" },
   { label: "NB", description: "No Ball" },
-  { label: "BYE", description: "Bye" },
+  { label: "B", description: "Bye" },
   { label: "LB", description: "Leg Bye" },
 ];
 
@@ -79,6 +79,15 @@ function Match() {
   }
 
   function handleFallofWicket() {
+    if (
+      innings[activeInning].batters.findIndex(
+        ({ playerName }) => playerName === newBatsman.trim()
+      ) >= 0
+    ) {
+      setDupBatterErr(true);
+      return;
+    }
+    setWicketDialogOpen(false);
     addWicket(wicketType, outBatsman, whoHelped, extraRuns, newBatsman, extra);
     setWicketType("");
     setOutBatsman("");
@@ -86,6 +95,7 @@ function Match() {
     setExtraRuns(0);
     setNewBatsman("");
     setExtra("");
+    setDupBatterErr(false);
   }
 
   const [wicketType, setWicketType] = useState<string>("bowled");
@@ -98,6 +108,8 @@ function Match() {
   const [selectedBowler, setSelectedBowler] = useState<string>("");
   const [showEndInnDialog, setShowEndInnDialog] = useState<boolean>(false);
   const [additionalRun, setAdditionalRun] = useState<string>("5");
+  const [dupBatterErr, setDupBatterErr] = useState<boolean>(false);
+  const [wicketDialogOpen, setWicketDialogOpen] = useState<boolean>(false);
 
   const handleBowlerChange = (bowler: string) => {
     setSelectedBowler(bowler);
@@ -139,9 +151,14 @@ function Match() {
     navigate("/match-details");
   }
 
+  function handleAddNewBowler() {
+    if (!selectedBowler) return;
+    addNewBowler(selectedBowler);
+  }
+
   return (
-    <section>
-      <div className="flex items-center border-b">
+    <>
+      <nav className="flex items-center border-b">
         <Button size="icon" variant="ghost">
           <Link to="/match-details">
             <ArrowLeft />
@@ -171,7 +188,7 @@ function Match() {
             </ul>
           </PopoverContent>
         </Popover>
-      </div>
+      </nav>
       <ScoreBoard />
       <Summary />
       <ThisOver />
@@ -250,7 +267,10 @@ function Match() {
                 </DialogContent>
               </Dialog>
 
-              <Dialog>
+              <Dialog
+                open={wicketDialogOpen}
+                onOpenChange={setWicketDialogOpen}
+              >
                 <DialogTrigger className="p-3 bg-slate-300 border text-red-700 font-medium">
                   OUT
                 </DialogTrigger>
@@ -366,20 +386,24 @@ function Match() {
                       type="text"
                       id="newBatsman"
                       placeholder="Player name"
+                      className={dupBatterErr ? "border-red-500" : ""}
                       value={newBatsman}
                       onChange={(e) => setNewBatsman(e.target.value)}
                     />
+                    {dupBatterErr && (
+                      <p className="text-sm text-red-500">
+                        Batter already exists!
+                      </p>
+                    )}
                   </div>
                   <DialogFooter className="sm:justify-start">
-                    <DialogClose asChild>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={handleFallofWicket}
-                      >
-                        Save
-                      </Button>
-                    </DialogClose>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={handleFallofWicket}
+                    >
+                      Save
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -404,11 +428,8 @@ function Match() {
           </DialogHeader>
           <AutoSuggestion onBowlerChange={handleBowlerChange} />
           <DialogFooter>
-            <DialogClose asChild>
-              <Button
-                type="submit"
-                onClick={() => addNewBowler(selectedBowler)}
-              >
+            <DialogClose>
+              <Button type="submit" onClick={handleAddNewBowler}>
                 Done
               </Button>
             </DialogClose>
@@ -423,7 +444,7 @@ function Match() {
         showDialog={showEndInnDialog}
         teamName={""}
       />
-    </section>
+    </>
   );
 }
 

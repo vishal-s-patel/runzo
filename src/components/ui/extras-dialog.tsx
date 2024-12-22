@@ -37,7 +37,7 @@ function ExtrasDialog({ title, label }: { title: string; label: string }) {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const { extraRun } = values;
-    if ((label === "LB" || label === "BYE") && extraRun === 0) {
+    if ((label === "LB" || label === "B") && extraRun === 0) {
       form.setError("extraRun", {
         message: "If extra is BYE or Leg Bye, min. run should be 1.",
       });
